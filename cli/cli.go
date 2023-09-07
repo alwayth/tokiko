@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"flag"
@@ -21,19 +21,19 @@ func NewCLI(
 func (c *CLI) Run(
 	args []string,
 ) (
-	inputFilePathFlag string,
-	outputFilePathFlag string,
+	inputFile string,
+	outputFile string,
 	err error,
 ) {
 	fs := flag.NewFlagSet("tokiko", flag.ExitOnError)
 	fs.SetOutput(c.stdOut)
 
-	fs.StringVar(&inputFilePathFlag, "i", "input.gif", "input git file path.")
-	fs.StringVar(&outputFilePathFlag, "o", "output.gif", "output gif file path.")
+	fs.StringVar(&inputFile, "i", "input.gif", "input git file")
+	fs.StringVar(&outputFile, "o", "output.gif", "output gif file")
 
 	if err = fs.Parse(args[1:]); err != nil {
 		return "", "", err
 	}
 
-	return inputFilePathFlag, outputFilePathFlag, nil
+	return inputFile, outputFile, nil
 }

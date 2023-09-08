@@ -109,23 +109,3 @@ func composite(
 
 	return out
 }
-
-func createGIFFile(
-	src *gif.GIF,
-	outputFilePath string,
-) {
-	newFile, err := os.Create(outputFilePath)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		if err := newFile.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	err = gif.EncodeAll(newFile, src)
-	if err != nil {
-		panic(err)
-	}
-}

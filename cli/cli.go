@@ -25,7 +25,7 @@ func (c *CLI) Run(
 	outputFile string,
 	err error,
 ) {
-	fs := flag.NewFlagSet("tokiko", flag.ExitOnError)
+	fs := flag.NewFlagSet("tokiko", flag.ContinueOnError)
 	fs.SetOutput(c.stdOut)
 
 	fs.StringVar(&inputFile, "i", "input.gif", "input git file")

@@ -7,49 +7,19 @@ import (
 	"image/draw"
 	"image/gif"
 	"image/png"
-	"io"
 	"os"
 	"regexp"
 )
 
-type IOSWrapper interface {
-	Open(name string) (*os.File, error)
-	Create(name string) (*os.File, error)
-}
-
-type OSWrapper struct{}
-
-func (m *OSWrapper) Open(name string) (*os.File, error)   { return os.Open(name) }
-func (m *OSWrapper) Create(name string) (*os.File, error) { return os.Create(name) }
-
-type GIFWrapper struct{}
-
-func (m *GIFWrapper) EncodeAll(w io.Writer, g *gif.GIF) error { return gif.EncodeAll(w, g) }
-
-type PNGWrapper struct{}
-
-func (m *PNGWrapper) Decode(r io.Reader) (image.Image, error) { return png.Decode(r) }
-
-type Generator struct {
-	IOSWrapper IOSWrapper
-}
-
-func NewGenerator() *Generator {
-	return &Generator{
-		IOSWrapper: &OSWrapper{},
-	}
-}
-
-func (g *Generator) Generate(
+func Generate(
 	inputFile,
 	outputFile string,
 ) error {
-
-	if err := g.validate(inputFile); err != nil {
+	if err := validate(inputFile); err != nil {
 		return err
 	}
 
-	f, err := g.IOSWrapper.Open(inputFile)
+	f, err := os.Open(inputFile)
 	if err != nil {
 		return err
 	}
@@ -64,8 +34,8 @@ func (g *Generator) Generate(
 		panic(err)
 	}
 
-	lgtmImg := g.readLGTMImg()
-	src := g.composite(decoded, lgtmImg)
+	lgtmImg := readLGTMImg()
+	src := composite(decoded, lgtmImg)
 
 	newFile, err := os.Create(outputFile)
 	if err != nil {
@@ -85,7 +55,7 @@ func (g *Generator) Generate(
 	return nil
 }
 
-func (g *Generator) validate(
+func validate(
 	name string,
 ) error {
 	r := regexp.MustCompile(`\.(gif|GIF)$`)
@@ -96,7 +66,7 @@ func (g *Generator) validate(
 	return nil
 }
 
-func (g *Generator) readLGTMImg() image.Image {
+func readLGTMImg() image.Image {
 	f, err := os.Open("assets/lgtm.png")
 	if err != nil {
 		panic(err)
@@ -115,7 +85,7 @@ func (g *Generator) readLGTMImg() image.Image {
 	return img
 }
 
-func (g *Generator) composite(
+func composite(
 	src *gif.GIF,
 	img image.Image,
 ) gif.GIF {
@@ -133,14 +103,14 @@ func (g *Generator) composite(
 	y := src.Config.Height/2 - img.Bounds().Dy()/2
 
 	for _, frame := range src.Image {
-		draw.Draw(frame, frame.Bounds(), img, image.Point{-x, -y}, draw.Over)
+		draw.Draw(frame, frame.Bounds(), img, image.Point{X: -x, Y: -y}, draw.Over)
 		out.Image = append(out.Image, frame)
 	}
 
 	return out
 }
 
-func (g *Generator) createGIFFile(
+func createGIFFile(
 	src *gif.GIF,
 	outputFilePath string,
 ) {
